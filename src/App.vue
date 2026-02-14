@@ -1,23 +1,17 @@
 <script setup>
-import GramadoStreet from './components/GramadoStreet.vue'
-import MapillaryView from './components/MapillaryView.vue'
-import { useUserStore } from './stores/user'
+import { useUserStore } from './stores/user';
+import MapillaryView from './components/MapillaryView.vue';
+import GramadoStreet from './components/GramadoStreet.vue';
+import LocationInfo from './components/LocationInfo.vue';
+import NearbyRoutes from './components/NearbyRoutes.vue';
 
-const userStore = useUserStore()
+const userStore = useUserStore();
 
-function handleMapillaryPosition(pos) {
-  // Update store, which updates map marker
-  // Check if position actually changed significantly to avoid jitter/loops
-  const EPSILON = 0.000001;
-  if (Math.abs(userStore.position.lat - pos.lat) > EPSILON || 
-      Math.abs(userStore.position.lng - pos.lng) > EPSILON) {
-      
-      userStore.position.lat = pos.lat;
-      userStore.position.lng = pos.lng;
-  }
-  
-  if (pos.bearing !== undefined) {
-      userStore.position.bearing = pos.bearing;
+function handleMapillaryPosition(data) {
+  userStore.position.lat = data.lat;
+  userStore.position.lng = data.lng;
+  if (data.bearing !== undefined) {
+    userStore.position.bearing = data.bearing;
   }
 }
 
@@ -27,10 +21,9 @@ function handleMapillaryBearing(bearing) {
 </script>
 
 <template>
-  <main>
-    <div class="app-container">
-      <!-- Full Screen Street View (Background) -->
-      <div class="street-view-layer">
+  <div id="app">
+    <div class="main-view">
+      <div class="street-view-container">
         <MapillaryView 
           :lat="userStore.position.lat" 
           :lng="userStore.position.lng"
@@ -39,75 +32,54 @@ function handleMapillaryBearing(bearing) {
           @update-position="handleMapillaryPosition"
           @update-bearing="handleMapillaryBearing"
         />
+        
+        <LocationInfo 
+          :lat="userStore.position.lat"
+          :lng="userStore.position.lng"
+        />
+        
+        <NearbyRoutes />
       </div>
-
-      <!-- Minimap Overlay (Top Right) -->
-      <div class="minimap-layer">
-        <GramadoStreet />
-      </div>
+      
+      <GramadoStreet />
     </div>
-  </main>
+  </div>
 </template>
 
-<style scoped>
-main {
-  width: 100vw;
-  height: 100dvh;
+<style>
+* {
   margin: 0;
   padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  background: #000;
+}
+
+#app {
+  width: 100%;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-view {
+  flex: 1;
+  position: relative;
   overflow: hidden;
 }
 
-.app-container {
-  position: relative;
-  width: 100%;
-  height: 100%;
-}
-
-.street-view-layer {
+.street-view-container {
   position: absolute;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 0;
-}
-
-.minimap-layer {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  width: 140px; /* Small, mobile friendly */
-  height: 180px;
-  z-index: 10;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-  border: 2px solid rgba(255, 255, 255, 0.8);
-  background: white; /* Fallback */
-}
-
-@media (min-width: 768px) {
-  .minimap-layer {
-    width: 200px;
-    height: 250px;
-    top: 24px;
-    right: 24px;
-  }
-}
-</style>
-<style>
-body, html {
-  margin: 0;
-  padding: 0;
-  width: 100%;
-  height: 100%;
-  background: #000;
-  overflow: hidden;
-}
-#app {
-  width: 100%;
-  height: 100%;
-  padding: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
 }
 </style>

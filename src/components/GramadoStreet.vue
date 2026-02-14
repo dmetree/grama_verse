@@ -6,6 +6,7 @@ import { useUserStore } from '../stores/user';
 import { fetchNearbyImages } from '../services/mapillary';
 
 const mapContainer = ref(null);
+const isMinimized = ref(false);
 let map = null;
 let userMarker = null;
 
@@ -215,7 +216,24 @@ function handleMove(direction) {
 
 <template>
   <div class="container">
-    <div ref="mapContainer" id="map-container"></div>
+    <div 
+      ref="mapContainer" 
+      id="map-container"
+      :class="{ 'minimized': isMinimized }"
+    ></div>
+    
+    <button 
+      class="minimap-toggle"
+      @click="isMinimized = !isMinimized"
+      :aria-label="isMinimized ? 'Expand minimap' : 'Minimize minimap'"
+    >
+      <svg v-if="isMinimized" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+      </svg>
+      <svg v-else width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M19 12H5M12 19l-7-7 7-7"/>
+      </svg>
+    </button>
   </div>
 </template>
 
@@ -229,31 +247,134 @@ function handleMove(direction) {
 }
 
 #map-container {
-  width: 100%;
-  height: 100%;
-  z-index: 1;
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 320px;
+  height: 240px;
+  z-index: 1000;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
+#map-container.minimized {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+}
+
+#map-container.minimized :deep(.leaflet-control-container) {
+  display: none;
+}
+
+.minimap-toggle {
+  position: absolute;
+  top: 30px;
+  right: 30px;
+  z-index: 1001;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.2s ease;
+  color: #333;
+}
+
+.minimap-toggle:hover {
+  background: rgba(255, 255, 255, 1);
+  transform: scale(1.1);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.minimap-toggle:active {
+  transform: scale(0.95);
+}
+
 :deep(.leaflet-control-scale) {
   display: block !important; 
   opacity: 1 !important;
   visibility: visible !important;
   z-index: 1000 !important;
-  color: #333 !important;
-  background: rgba(255, 255, 255, 0.8);
-  padding: 4px;
-  border-radius: 4px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+  color: #fff !important;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+  padding: 6px 8px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   margin-top: 10px;
   margin-right: 10px;
+  font-weight: 500;
 }
+
 :deep(.leaflet-control-scale-line) {
-  border: 2px solid #555;
+  border: 2px solid rgba(255, 255, 255, 0.8);
   border-top: none;
   line-height: 1.1;
   padding: 2px 5px 1px;
   font-size: 11px;
-  font-weight: bold;
-  color: #333;
+  font-weight: 600;
+  color: #fff;
   background: transparent; 
+}
+
+/* Smooth panning animation */
+:deep(.leaflet-map-pane) {
+  transition: transform 0.2s ease-out;
+}
+
+/* Hover effects for markers */
+:deep(.leaflet-marker-icon),
+:deep(.leaflet-interactive) {
+  transition: all 0.2s ease;
+}
+
+:deep(.leaflet-interactive:hover) {
+  filter: brightness(1.2);
+  transform: scale(1.15);
+  cursor: pointer;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  #map-container {
+    top: auto;
+    bottom: 20px;
+    right: 20px;
+    width: 280px;
+    height: 200px;
+  }
+  
+  .minimap-toggle {
+    top: auto;
+    bottom: 30px;
+    right: 30px;
+  }
+}
+
+@media (max-width: 480px) {
+  #map-container {
+    width: calc(100% - 40px);
+    height: 160px;
+    bottom: 20px;
+    right: 20px;
+    left: 20px;
+  }
+  
+  .minimap-toggle {
+    bottom: 30px;
+    right: 30px;
+  }
 }
 </style>
