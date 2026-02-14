@@ -2,10 +2,10 @@ import { ref } from 'vue'
 import { defineStore } from 'pinia'
 
 export const useUserStore = defineStore('user', () => {
-  // Rua Coberta / Palácio dos Festivais area - likely to have coverage
+  // Gramado Central Bus Station (Rodoviária de Gramado)
   const position = ref({
-    lat: -29.376267, 
-    lng: -50.874530,
+    lat: -29.378889, 
+    lng: -50.876111,
     bearing: 90, // Facing East typically
     targetImageId: null // Optional: for direct teleport
   })
