@@ -6,11 +6,21 @@ import { useUserStore } from '../stores/user';
 import { fetchNearbyImages } from '../services/mapillary';
 
 const mapContainer = ref(null);
-const isMinimized = ref(false);
+const mapState = ref('normal'); // 'minimized', 'normal', 'wide'
 let map = null;
 let userMarker = null;
 
 const userStore = useUserStore();
+
+function cycleMapState() {
+  if (mapState.value === 'normal') {
+    mapState.value = 'wide';
+  } else if (mapState.value === 'wide') {
+    mapState.value = 'minimized';
+  } else {
+    mapState.value = 'normal';
+  }
+}
 
 // Constants
 const FETCH_RADIUS = 0.002;
@@ -219,19 +229,25 @@ function handleMove(direction) {
     <div 
       ref="mapContainer" 
       id="map-container"
-      :class="{ 'minimized': isMinimized }"
+      :class="{ 
+        'minimized': mapState === 'minimized',
+        'wide': mapState === 'wide'
+      }"
     ></div>
     
     <button 
       class="minimap-toggle"
-      @click="isMinimized = !isMinimized"
-      :aria-label="isMinimized ? 'Expand minimap' : 'Minimize minimap'"
+      @click="cycleMapState"
+      :aria-label="mapState === 'minimized' ? 'Expand minimap' : mapState === 'normal' ? 'Maximize minimap' : 'Minimize minimap'"
     >
-      <svg v-if="isMinimized" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <svg v-if="mapState === 'minimized'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
       </svg>
+      <svg v-else-if="mapState === 'normal'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
+      </svg>
       <svg v-else width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M19 12H5M12 19l-7-7 7-7"/>
+        <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/>
       </svg>
     </button>
   </div>
@@ -271,6 +287,14 @@ function handleMove(direction) {
 
 #map-container.minimized :deep(.leaflet-control-container) {
   display: none;
+}
+
+#map-container.wide {
+  width: 600px;
+  height: 450px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
 .minimap-toggle {
