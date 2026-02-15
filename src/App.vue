@@ -1,11 +1,23 @@
 <script setup>
+import { ref } from 'vue';
 import { useUserStore } from './stores/user';
 import MapillaryView from './components/MapillaryView.vue';
 import GramadoStreet from './components/GramadoStreet.vue';
 import LocationInfo from './components/LocationInfo.vue';
 import NearbyRoutes from './components/NearbyRoutes.vue';
+import MenuButton from './components/MenuButton.vue';
+import Sidebar from './components/Sidebar.vue';
 
 const userStore = useUserStore();
+const isSidebarOpen = ref(false);
+
+function toggleSidebar() {
+  isSidebarOpen.value = !isSidebarOpen.value;
+}
+
+function closeSidebar() {
+  isSidebarOpen.value = false;
+}
 
 function handleMapillaryPosition(data) {
   userStore.position.lat = data.lat;
@@ -22,6 +34,12 @@ function handleMapillaryBearing(bearing) {
 
 <template>
   <div id="app">
+    <!-- Menu Button -->
+    <MenuButton :isOpen="isSidebarOpen" @toggle="toggleSidebar" />
+    
+    <!-- Sidebar -->
+    <Sidebar :isOpen="isSidebarOpen" @close="closeSidebar" />
+    
     <div class="main-view">
       <div class="street-view-container">
         <MapillaryView 
